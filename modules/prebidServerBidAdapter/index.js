@@ -685,9 +685,10 @@ Object.assign(ORTB2.prototype, {
       }, {...deepAccess(adUnit, 'ortb2Imp.ext')});
 
       const imp = { id: impressionId, ext, secure: s2sConfig.secure };
-
       const ortb2 = {...deepAccess(adUnit, 'ortb2Imp.ext.data')};
-      Object.keys(ortb2).forEach(prop => {
+      const mergedImp = {...imp, ...ortb2}
+
+      Object.keys(mergedImp).forEach(prop => {
         /**
           * Prebid AdSlot
           * @type {(string|undefined)}
@@ -710,6 +711,8 @@ Object.assign(ORTB2.prototype, {
               deepSetValue(imp, `ext.data.adserver.${name.toLowerCase()}`, value);
             }
           });
+        } else if (prop === 'ortb2Imp') {
+          deepSetValue(imp, `${prop}`, mergedImp[prop]);
         } else {
           deepSetValue(imp, `ext.data.${prop}`, ortb2[prop]);
         }
@@ -786,7 +789,9 @@ Object.assign(ORTB2.prototype, {
     /**
      * @type {(string[]|string|undefined)} - OpenRTB property 'cur', currencies available for bids
      */
+
     const adServerCur = config.getConfig('currency.adServerCurrency');
+
     if (adServerCur && typeof adServerCur === 'string') {
       // if the value is a string, wrap it with an array
       request.cur = [adServerCur];
